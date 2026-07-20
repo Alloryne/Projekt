@@ -3,7 +3,7 @@ import torch
 from Game import Model
 from Game import EmpiricalLagrangianTrainer
 from Game.evaluation import evaluate_model, ArgmaxMechanism
-from Game.game import Game, ReportStrategy, ContinousErrorWrongReportGeneration
+from Game.game import Game, ReportStrategy, ContinousErrorReportGeneration
 from Game.utility import objective_fn, utility_fn
 
 
@@ -26,13 +26,16 @@ def main():
     device = torch.device(device)
     # END TODO
 
-    reportGeneration = ContinousErrorWrongReportGeneration(player_report_error_dist, independent_report_error_dist)
+    independent_report_generation = ContinousErrorReportGeneration(independent_report_error_dist)
+    for_player_report_generation = ContinousErrorReportGeneration(player_report_error_dist)
     dataset = Game(
         dataset_size=dataset_size,
         players_num=2,
         real_values_dist=real_values_dist,
         report_strategy=reportStrategy,
-        report_generation=reportGeneration)
+        independent_report_generation=independent_report_generation,
+        for_player_report_generation=for_player_report_generation
+    )
 
     model = Model(players_num, num_hidden_layers)
     trainer = EmpiricalLagrangianTrainer(

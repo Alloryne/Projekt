@@ -9,6 +9,8 @@ https://www.ifaamas.org/Proceedings/aamas2018/pdfs/p354.pdf
 https://www.ijcai.org/proceedings/2018/0036.pdf
 https://www.ijcai.org/Proceedings/16/Papers/068.pdf
 
+https://arxiv.org/abs/2511.11157
+
 Notebook:
 https://colab.research.google.com/drive/1XNDCkFNG3KNA9l9b1AuUKcAfkDmmmbp_?usp=sharing
 

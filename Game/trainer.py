@@ -21,7 +21,7 @@ class EmpiricalLagrangianTrainer:
     def __init__(
             self,
             model: nn.Module,
-            objective_fn: Callable[[nn.Module, torch.Tensor, torch.Tensor], torch.Tensor],
+            objective_fn: Callable[[nn.Module, torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor],
             utility_fn: Callable[[nn.Module, torch.Tensor, torch.Tensor, int], torch.Tensor],
             players_num: int,
             rho_scheduler: Callable[[int], float],
@@ -120,7 +120,7 @@ class EmpiricalLagrangianTrainer:
             # print(f"For player reports: {for_player_reports}")
             # print(f"Independent reports: {independent_reports}")
 
-            n = self.players_num
+            players_num = self.players_num
             rho_t = self.rho_scheduler(t)
 
             # 6-10 inner loop optimize misreports
@@ -129,8 +129,8 @@ class EmpiricalLagrangianTrainer:
 
             # 11-13 Compute regret gradient
             # For the gradient of regret wrt w, we compute a scalar equal to the mean regret across batch
-            regrets_per_player = torch.zeros(n, device=self.device)
-            for i in range(n):
+            regrets_per_player = torch.zeros(players_num, device=self.device)
+            for i in range(players_num):
                 # reports for misreport case
                 v_reports_mis = true_reports.clone()
                 v_reports_mis[:, i] = v_prime[:, i]
@@ -138,7 +138,7 @@ class EmpiricalLagrangianTrainer:
                 u_mis = self.utility_fn(self.model, independent_reports, v_reports_mis, i)  # (B,)
 
                 # truthful utility
-                u_truth = self.utility_fn(self.model, independent_reports, true_reports, i)  # (B,)
+                u_truth = self.utility_fn(self.model, independent_reports, for_player_reports, i)  # (B,)
 
                 regret = (u_mis - u_truth)  # (B,)
                 mean_regret = regret.mean()
