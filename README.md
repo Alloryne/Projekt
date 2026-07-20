@@ -5,8 +5,12 @@ Articles:
 https://arxiv.org/pdf/1706.03459
 Selecting a winner with external referees
 
+https://www.ifaamas.org/Proceedings/aamas2018/pdfs/p354.pdf
+https://www.ijcai.org/proceedings/2018/0036.pdf
+https://www.ijcai.org/Proceedings/16/Papers/068.pdf
+
 Notebook:
-https://colab.research.google.com/drive/1XNDCkFNG3KNA9l9b1AuUKcAfkDmmmbp_
+https://colab.research.google.com/drive/1XNDCkFNG3KNA9l9b1AuUKcAfkDmmmbp_?usp=sharing
 
 Project text:
 https://www.overleaf.com/project/68fe728d5787c7dcef1d77bc
@@ -29,3 +33,5 @@ TODO:
 2. Train different models from above on the cluster.
 3. Write down results as your master thesis.
 4. Send draft to promotor.
+
+# TOOD DRAFT
