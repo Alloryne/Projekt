@@ -148,7 +148,6 @@ def main(args):
         dataset_size=train_dataset_size,
         players_num=players_num,
         real_values_dist=real_values_dist,
-        report_strategy=report_strategy,
         independent_report_generation=independent_report_generation,
         for_player_report_generation=for_player_report_generation
     )
@@ -157,7 +156,6 @@ def main(args):
         dataset_size=eval_dataset_size,
         players_num=players_num,
         real_values_dist=real_values_dist,
-        report_strategy=report_strategy,
         independent_report_generation=independent_report_generation,
         for_player_report_generation=for_player_report_generation
     )
@@ -169,7 +167,8 @@ def main(args):
         utility_fn,
         players_num=players_num,
         rho_scheduler=rho_sched,
-        device=device
+        device=device,
+        report_strategy=report_strategy,
     )
     trainer.train(train_dl, epoch_num)
 

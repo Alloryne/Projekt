@@ -1,8 +1,14 @@
+from enum import Enum
 from typing import Callable, Optional
 
 import torch
 import torch.nn as nn
 from tqdm import tqdm
+
+
+class ReportStrategy(Enum):
+    SELF_REPORT = 1
+    OTHER_REPORT = 2
 
 
 class EmpiricalLagrangianTrainer:
@@ -32,6 +38,7 @@ class EmpiricalLagrangianTrainer:
             batch_size: int = 32,
             q_number: int = 1,
             device: Optional[torch.device] = None,
+            report_strategy: ReportStrategy = ReportStrategy.SELF_REPORT,
     ):
         self.model = model
         self.objective_fn = objective_fn
@@ -45,6 +52,7 @@ class EmpiricalLagrangianTrainer:
         self.batch_size = batch_size
         self.q_number = q_number
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.report_strategy = report_strategy
 
         self.model.to(self.device)
 
@@ -58,12 +66,13 @@ class EmpiricalLagrangianTrainer:
             for_players_reports: torch.Tensor,
     ) -> torch.Tensor:
         """
-        For each sample in batch for each player calculates misreport. This procedure is inspired by Dutting
-        to get DSIC misreports.
-        The replacement of only the misreporting player's report is correct for DSIC.
+        For each sample in batch for each player calculates misreport maximising regret.
+        If trainer has DSIC constraint type then a player misreport is a vector that maximizes ex post regret:
+        expected loss of utility when reporting truthfully, compared to when reporting optimally with knowledge
+        of other players reports..
         :param independent_reports: vector that has the independent reports, shape (batch_size, n_players)
         :param for_players_reports: vector that has the reports for players, shape (batch_size, n_players)
-        :return:
+        :return: a tensor of size (B, n)
         """
         B, n = for_players_reports.shape[0], self.players_num
         # print(B, n, for_players_reports.shape)
@@ -121,6 +130,9 @@ class EmpiricalLagrangianTrainer:
             true_reports = batch['true_values'].to(self.device)
             for_player_reports = batch['for_players_reports'].to(self.device)
             independent_reports = batch['independent_reports'].to(self.device)
+
+            if self.report_strategy == ReportStrategy.OTHER_REPORT:
+                for_player_reports = torch.roll(for_player_reports, shifts=1, dims=0)
 
             # print(f"True reports: {true_reports}")
             # print(f"For player reports: {for_player_reports}")
@@ -231,6 +243,9 @@ class EmpiricalLagrangianTrainer:
                 for_player_reports = batch['for_players_reports'].to(device)
                 independent_reports = batch['independent_reports'].to(device)
 
+                if self.report_strategy == ReportStrategy.OTHER_REPORT:
+                    for_player_reports = torch.roll(for_player_reports, shifts=1, dims=0)
+
                 n = self.players_num
 
                 # --- objective ---
@@ -308,6 +323,9 @@ class EmpiricalLagrangianTrainer:
                 for_player_reports = batch['for_players_reports'].to(device)
                 independent_reports = batch['independent_reports'].to(device)
 
+                if self.report_strategy == ReportStrategy.OTHER_REPORT:
+                    for_player_reports = torch.roll(for_player_reports, shifts=1, dims=0)
+
                 n = self.players_num
 
                 # --- objective ---
@@ -328,10 +346,15 @@ class EmpiricalLagrangianTrainer:
                     # (this is evaluation, not training, so OK)
 
                     # only player i misreports
-                    v_reports_mis = for_player_reports.clone()
-                    v_reports_mis[:, i] = 1 - v_reports_mis[:, i]
+                    v_reports_0 = for_player_reports.clone()
+                    v_reports_1 = for_player_reports.clone()
 
-                    u_mis = self.utility_fn(model, independent_reports, v_reports_mis, i)
+                    v_reports_0[:, i] = 0
+                    v_reports_1[:, i] = 1
+
+                    u_0 = self.utility_fn(model, independent_reports, v_reports_0, i)
+                    u_1 = self.utility_fn(model, independent_reports, v_reports_1, i)
+                    u_mis = max(u_0, u_1)
 
                     regret_i = (u_mis - u_truth).mean()
                     regrets.append(regret_i)
@@ -351,4 +374,3 @@ class EmpiricalLagrangianTrainer:
             "max_regret": max_regret,
             "regret_per_player": avg_regret_per_player
         }
-

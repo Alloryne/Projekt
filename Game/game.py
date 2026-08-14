@@ -1,13 +1,7 @@
 import abc
 from abc import abstractmethod
-from enum import Enum
 
 import torch
-
-
-class ReportStrategy(Enum):
-    SELF_REPORT = 1
-    OTHER_REPORT = 2
 
 
 class AbstractReportGeneration(abc.ABC):
@@ -65,26 +59,21 @@ class Game(torch.utils.data.Dataset):
     """
     def __init__(self, dataset_size: int, players_num: int,
                  real_values_dist: torch.distributions.Distribution,
-                 report_strategy: ReportStrategy,
                  independent_report_generation: AbstractReportGeneration,
                  for_player_report_generation: AbstractReportGeneration):
         self.dataset_size = dataset_size
         self.players_num = players_num
         self.real_values_dist = real_values_dist
-        self.report_strategy = report_strategy
-        self.report_generation = independent_report_generation
-        self.independent_report_generation = for_player_report_generation
+        self.for_player_report_generation = for_player_report_generation
+        self.independent_report_generation = independent_report_generation
 
     def __len__(self) -> int:
         return self.dataset_size
 
     def __getitem__(self, idx):
         true_values = self.real_values_dist.sample((self.players_num,))
-        for_player_reports = self.report_generation.get_reports(true_values)
+        for_player_reports = self.for_player_report_generation.get_reports(true_values)
         independent_reports = self.independent_report_generation.get_reports(true_values)
-
-        if self.report_strategy == ReportStrategy.OTHER_REPORT:
-            for_player_reports = torch.roll(for_player_reports, shifts=1, dims=0)
 
         return {
             'true_values': true_values,
@@ -105,7 +94,6 @@ class BinaryGame(Game):
                  for_player_report_generation: AbstractReportGeneration):
         # TODO FIX FOR CONTINOUS REPORT GENERATION
         super().__init__(dataset_size, players_num, torch.distributions.Bernoulli(probs=0.5),
-                         report_strategy,
                          independent_report_generation,
                          for_player_report_generation)
 
@@ -114,11 +102,8 @@ class BinaryGame(Game):
 
     def __getitem__(self, idx):
         true_values = self.real_values_dist.sample((self.players_num,))
-        for_player_reports = self.report_generation.get_reports(true_values)
+        for_player_reports = self.for_player_report_generation.get_reports(true_values)
         independent_reports = self.independent_report_generation.get_reports(true_values)
-
-        if self.report_strategy == ReportStrategy.OTHER_REPORT:
-            for_player_reports = torch.roll(for_player_reports, shifts=1, dims=0)
 
         return {
             'true_values': true_values,
