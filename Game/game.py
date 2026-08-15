@@ -84,13 +84,13 @@ class Game(torch.utils.data.Dataset):
 
 class BinaryGame(Game):
     """
-        Abstract Dataset that represents a game.
-        It stores the number of players, distribution of player valuations.
-        It returns the true valuations, valuations reported to the players
-        and independent reports of valuations.
-        """
+    Abstract Dataset that represents a game.
+    It stores the number of players, distribution of player valuations.
+    It returns the true valuations, valuations reported to the players
+    and independent reports of valuations.
+    """
     def __init__(self, dataset_size: int, players_num: int,
-                 report_strategy: ReportStrategy, independent_report_generation: AbstractReportGeneration,
+                 independent_report_generation: AbstractReportGeneration,
                  for_player_report_generation: AbstractReportGeneration):
         # TODO FIX FOR CONTINOUS REPORT GENERATION
         super().__init__(dataset_size, players_num, torch.distributions.Bernoulli(probs=0.5),

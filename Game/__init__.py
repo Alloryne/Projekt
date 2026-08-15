@@ -1,2 +1,2 @@
 from .model import Model
-from .trainer import EmpiricalLagrangianTrainer
+from .trainer import DSICEmpiricalLagrangianTrainer, BICEmpiricalLagrangianTrainer

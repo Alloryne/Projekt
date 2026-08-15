@@ -4,10 +4,11 @@ from pathlib import Path
 import torch
 
 from Game import Model
-from Game import EmpiricalLagrangianTrainer
+from Game import DSICEmpiricalLagrangianTrainer, BICEmpiricalLagrangianTrainer
 from Game.evaluation import ArgmaxMechanism
-from Game.game import Game, ReportStrategy, ContinousErrorReportGeneration, CorrectReportGeneration, \
+from Game.game import Game, ContinousErrorReportGeneration, CorrectReportGeneration, \
     ConstantChanceReportGeneration, InvertValueReportGeneration, BinaryGame
+from Game.trainer import ReportStrategy
 from Game.utility import objective_fn, utility_fn
 
 
@@ -16,6 +17,11 @@ REPORT_GENERATORS = {
     'constant_chance': ConstantChanceReportGeneration,
     'invert_value': InvertValueReportGeneration,
     'continuous_error': ContinousErrorReportGeneration
+}
+
+TRAINER_GENERATORS = {
+    'DSIC': DSICEmpiricalLagrangianTrainer,
+    'BIC': BICEmpiricalLagrangianTrainer
 }
 
 
@@ -61,6 +67,15 @@ def parse_args():
         default='SELF_REPORT',
         choices=[e.name for e in ReportStrategy],
         help="Reporting strategy to employ"
+    )
+
+    # DSIC or BIC
+    parser.add_argument(
+        '--compatibility',
+        type=lambda s: s.upper(),
+        default='DSIC',
+        choices=list(TRAINER_GENERATORS.keys()),
+        help="Compatibility criterion to employ"
     )
 
     # Device
@@ -122,6 +137,7 @@ def main(args):
     for_player_report_generation = get_generator(player_report_args)
 
     # Training setup
+    trainer_cls = TRAINER_GENERATORS[args.compatibility]
     train_dataset_size = args.train_dataset_size
     eval_dataset_size = args.eval_dataset_size
     train_batch_size = args.train_batch_size
@@ -161,10 +177,10 @@ def main(args):
     )
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=eval_batch_size, shuffle=True)
 
-    trainer = EmpiricalLagrangianTrainer(
-        model,
-        objective_fn,
-        utility_fn,
+    trainer = trainer_cls(
+        model=model,
+        objective_fn=objective_fn,
+        utility_fn=utility_fn,
         players_num=players_num,
         rho_scheduler=rho_sched,
         device=device,
@@ -181,7 +197,6 @@ def main(args):
     binary_eval_dataset = BinaryGame(
         dataset_size=eval_dataset_size,
         players_num=players_num,
-        report_strategy=report_strategy,
         independent_report_generation=independent_report_generation,
         for_player_report_generation=for_player_report_generation
     )
