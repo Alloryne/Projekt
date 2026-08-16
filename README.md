@@ -35,14 +35,24 @@ Default command:
 python main.py 
 ```
 
-1. Two players, inverted error, self report
-2. Five players, inverted error, self report
-3. Two players, inverted error, other report
-4. Five players, inverted error, other report
-
 Command for Two players, inverted error, self report:
 ```bash
 python main.py --players_num 2 --player_report_class invert_value --strategy SELF_REPORT 
+```
+
+Command for Five players, inverted error, self report:
+```bash
+python main.py --players_num 5 --player_report_class invert_value --strategy SELF_REPORT 
+```
+
+Command for Two players, inverted error, self report:
+```bash
+python main.py --players_num 2 --player_report_class invert_value --strategy OTHER_REPORT 
+```
+
+Command for Five players, inverted error, self report:
+```bash
+python main.py --players_num 5 --player_report_class invert_value --strategy OTHER_REPORT 
 ```
 
 ## Specifics of training
@@ -74,20 +84,22 @@ TODO:
 3. Write results as your master thesis.
 4. Send draft to promotor.
 
-# TOOD DRAFT
-0. Check DSIC and BIC, implement BIC if possible, search auction paper for reference to modification to bic
-1. All the different commands I need to run for training 
-2. Check the specs, for how many training epoch we want
-3. Slurm script for training on the cluster
-4. Testing small cases locally
-5. Testing on entropy cluster
-6. Run on entropy cluster
-7. Prepare the document with explanation of approach
-8. Add evaluation functions:
-- Misreport gradient ascent plots: (where misreports are, heatmap of score, where true report is) - can be done at inference 
-- Heatmap of allocation for two players - can be done at inference
-- Bar graph of regret and revenue for different architectures on the same problem - can be done at inference
-- Compare with optimal design when it is known - can be done at inference
-- rgt(90%) = value of regret that such that for 90% of valuations lower is achieved - can be done at inference
-9. Add results graphs to document
-10. Implement the theoretical best mechanism from "Selecting a winner with external referees"
+# TODO NOW:
+- List of commands for training
+
+# TOOD GENERAL
+- Check the specs, for how many training epoch we want
+- Slurm script for training on the cluster
+- Testing small cases locally
+- Testing on entropy cluster
+- Run on entropy cluster
+- Prepare the document with explanation of approach 
+- -Add evaluation functions:
+  -  Misreport gradient ascent plots: (where misreports are, heatmap of score, where true report is) - can be done at inference 
+  - Heatmap of allocation for two players - can be done at inference
+  - Bar graph of regret and revenue for different architectures on the same problem - can be done at inference
+  - Compare with optimal design when it is known - can be done at inference
+  - rgt(90%) = value of regret that such that for 90% of valuations lower is achieved - can be done at inference
+- Add results graphs to document
+- Implement the theoretical best mechanism from "Selecting a winner with external referees"
+- Add a beta (bimodal distribution) to draw values from.

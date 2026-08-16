@@ -1,4 +1,5 @@
 import argparse
+from datetime import datetime
 from pathlib import Path
 
 import torch
@@ -83,10 +84,10 @@ def parse_args():
 
     # Model save path
     parser.add_argument(
-        '--model_path',
+        "--model_path",
         type=Path,
-        default=Path("checkpoints/model.pt"),
-        help="Path where the model checkpoint will be saved (e.g., checkpoints/model.pt)"
+        default=None,
+        help="Path where the model checkpoint will be saved (e.g., checkpoints/model.pt)",
     )
 
     return parser.parse_args()
@@ -153,9 +154,6 @@ def main(args):
         print("Training on CPU")
     rho_sched = lambda t: 1.0
 
-    model_path = Path(args.model_path)
-    model_path.parent.mkdir(parents=True, exist_ok=True)
-
     # Model
     model = Model(players_num, num_hidden_layers).to(device)
 
@@ -204,6 +202,24 @@ def main(args):
     trainer.binary_evaluate_model(model, binary_eval_dl)
     trainer.binary_evaluate_model(ArgmaxMechanism(players_num), binary_eval_dl)
 
+    # Saving model
+    if args.model_path is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = (
+            f"model_{timestamp}_"
+            f"p{args.players_num}_"
+            f"ep{args.epoch_num}_"
+            f"strat-{args.strategy}_"
+            f"compat-{args.compatibility}.pt"
+        )
+        model_path = Path("checkpoints") / filename
+    else:
+        model_path = Path(args.model_path)
+
+    # Create output directories if they don't exist
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Save the checkpoint
     torch.save(model.state_dict(), model_path)
 
 
