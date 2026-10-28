@@ -13,12 +13,6 @@ https://www.ijcai.org/Proceedings/16/Papers/068.pdf
 
 https://arxiv.org/abs/2511.11157
 
-Notebook:
-https://colab.research.google.com/drive/1XNDCkFNG3KNA9l9b1AuUKcAfkDmmmbp_?usp=sharing
-
-Project text:
-https://www.overleaf.com/project/68fe728d5787c7dcef1d77bc
-
 This repository has code for representing games similar to the game from “Selecting a winner with external referees”,
 and mechanisms for making decisions as torch models. These mechanisms can be trained, which is the main purpose
 the repository.

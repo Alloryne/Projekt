@@ -61,6 +61,15 @@ def parse_args():
     parser.add_argument('--independent_err_min', type=float, default=-0.2)
     parser.add_argument('--independent_err_max', type=float, default=0.2)
 
+    # Player report generation
+    parser.add_argument('--next_player_report_class', type=str, default='correct',
+                        choices=list(REPORT_GENERATORS.keys()),
+                        help="Which next player report generation to use")
+    parser.add_argument('--next_player_accuracy', type=float, default=0.8,
+                        help="Next player accuracy for constant_chance or invert_value strategies (0.0 to 1.0)")
+    parser.add_argument('--next_player_err_min', type=float, default=-0.1)
+    parser.add_argument('--next_player_err_max', type=float, default=0.1)
+
     # Reporting strategy
     parser.add_argument(
         '--strategy',
@@ -137,6 +146,9 @@ def main(args):
     player_report_args = extract_prefixed_args(args, 'player_')
     for_player_report_generation = get_generator(player_report_args)
 
+    next_player_report_args = extract_prefixed_args(args, 'next_player_')
+    next_player_report_generation = get_generator(next_player_report_args)
+
     # Training setup
     trainer_cls = TRAINER_GENERATORS[args.compatibility]
     train_dataset_size = args.train_dataset_size
@@ -163,7 +175,9 @@ def main(args):
         players_num=players_num,
         real_values_dist=real_values_dist,
         independent_report_generation=independent_report_generation,
-        for_player_report_generation=for_player_report_generation
+        for_player_report_generation=for_player_report_generation,
+        report_strategy=report_strategy,
+        for_next_player_report_generation=next_player_report_generation
     )
     train_dl = torch.utils.data.DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
     eval_dataset = Game(
@@ -171,7 +185,9 @@ def main(args):
         players_num=players_num,
         real_values_dist=real_values_dist,
         independent_report_generation=independent_report_generation,
-        for_player_report_generation=for_player_report_generation
+        for_player_report_generation=for_player_report_generation,
+        report_strategy=report_strategy,
+        for_next_player_report_generation=next_player_report_generation
     )
     eval_dl = torch.utils.data.DataLoader(eval_dataset, batch_size=eval_batch_size, shuffle=True)
 
@@ -179,7 +195,6 @@ def main(args):
         model=model,
         objective_fn=objective_fn,
         utility_fn=utility_fn,
-        players_num=players_num,
         rho_scheduler=rho_sched,
         device=device,
         report_strategy=report_strategy,
@@ -196,7 +211,9 @@ def main(args):
         dataset_size=eval_dataset_size,
         players_num=players_num,
         independent_report_generation=independent_report_generation,
-        for_player_report_generation=for_player_report_generation
+        for_player_report_generation=for_player_report_generation,
+        report_strategy=report_strategy,
+        for_next_player_report_generation=next_player_report_generation
     )
     binary_eval_dl = torch.utils.data.DataLoader(binary_eval_dataset, batch_size=eval_batch_size, shuffle=True)
     trainer.binary_evaluate_model(model, binary_eval_dl)
